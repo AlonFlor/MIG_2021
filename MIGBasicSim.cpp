@@ -4,21 +4,74 @@
 #include "MIGBasicSim.h"
 #include "Person.h"
 #include <math.h>
+#include <stdio.h>
+#include <vector>
+#include <random>
 
 using namespace std;
 
-float interaction_strength = 5.0;
-float interaction_range = 1.0;
-float relaxation_time = 1.0;
-float desired_speed = 1.0;
+float interaction_strength;
+float interaction_range;
+float relaxation_time;
+float desired_speed;
 
-float interaction_radius = 1.5;
+float interaction_radius;
 //float max_interation_force = 20;
 
-const float dt = 0.001;
-const float total_time = 100;
-const int num_people = 100;
+float dt;
+float total_time;
+int num_groups;
+int people_per_group;
+int num_people;
 
+vector<float> group_inits;
+vector<float> group_displacements;
+
+void read_parameters(char* parameters_file) {
+	FILE* params_file;
+	params_file = fopen(parameters_file, "r");
+	char nothing[100];
+	int also_nothing = 0;
+
+	also_nothing = fscanf(params_file, "%f %s", &interaction_strength, nothing);
+	printf("interaction_strength: %f\n", interaction_strength);
+	also_nothing = fscanf(params_file, "%f %s", &interaction_range, nothing);
+	printf("interaction_range: %f\n", interaction_range);
+	also_nothing = fscanf(params_file, "%f %s", &relaxation_time, nothing);
+	printf("relaxation_time: %f\n", relaxation_time);
+	also_nothing = fscanf(params_file, "%f %s", &desired_speed, nothing);
+	printf("desired_speed: %f\n", desired_speed);
+
+	also_nothing = fscanf(params_file, "%f %s", &interaction_radius, nothing);
+	printf("interaction_radius: %f\n", interaction_radius);
+	also_nothing = fscanf(params_file, "%f %s", &dt, nothing);
+	printf("dt: %f\n", dt);
+	also_nothing = fscanf(params_file, "%f %s", &total_time, nothing);
+	printf("total_time: %f\n", total_time);
+	also_nothing = fscanf(params_file, "%d %s", &people_per_group, nothing);
+	printf("people_per_group: %d\n", people_per_group);
+	also_nothing = fscanf(params_file, "%d %s", &num_groups, nothing);
+	printf("num_groups: %d\n", num_groups);
+	num_people = num_groups * people_per_group;
+
+	float x_init;
+	float y_init;
+	float x_disp;
+	float y_disp;
+	for (int i = 0; i < num_groups; ++i) {
+		also_nothing = fscanf(params_file, "%f %f %s", &x_init, &y_init, nothing);
+		group_inits.push_back(x_init);
+		group_inits.push_back(y_init);
+		printf("group %d init: (%f, %f)\n", i, group_inits[2*i], group_inits[2*i + 1]);
+		
+		also_nothing = fscanf(params_file, "%f %f %s", &x_disp, &y_disp, nothing);
+		group_displacements.push_back(x_disp);
+		group_displacements.push_back(y_disp);
+		printf("group %d displacement: (%f, %f)\n", i, group_displacements[2*i], group_displacements[2*i + 1]);
+	}
+
+	fclose(params_file);
+}
 
 Person initialize(float initial_X[], float initial_V[], float desired_displacement[], int group_ID)
 {
@@ -62,7 +115,7 @@ float** interaction_force_and_disease_spread(Person p1, Person p2)
 	return ans;
 }
 
-float** net_interaction_force_and_disease_spread(int p1_index, Person people[])
+float** net_interaction_force_and_disease_spread(int p1_index, vector<Person>people)
 {
 	float force[2];
 	force[0] = 0.0;
@@ -91,21 +144,7 @@ float** net_interaction_force_and_disease_spread(int p1_index, Person people[])
 
 int main()
 {
-	//centers
-	float initial_center1[2];
-	initial_center1[0] = -15.0;
-	initial_center1[1] = 0.0;
-	float initial_center2[2];
-	initial_center2[0] = 15.0;
-	initial_center2[1] = 0.0;
-
-	//displacements
-	float displacement1[2];
-	displacement1[0] = 30.0;
-	displacement1[1] = 0.0;
-	float displacement2[2];
-	displacement2[0] = -30.0;
-	displacement2[1] = 0.0;
+	read_parameters("description.txt");
 
 	//initial velocity
 	float initial_V[2];
@@ -113,25 +152,45 @@ int main()
 	initial_V[1] = 0.;
 
 	//initialize particles
-	Person people[num_people];
-	int count = 0;
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 10; ++j) {
+	vector<Person> people;
+	random_device r;
+	default_random_engine e1(r());
+	uniform_real_distribution<float> distribution(0,5);
+	printf("num_groups %d\n",num_groups);
+	printf("people_per_group %d\n",people_per_group);
+	for (int i = 0; i < num_groups; ++i) {
+		float init_center[2];
+		init_center[0] = group_inits[2*i];
+		init_center[1] = group_inits[2*i + 1];
+		float disp_center[2];
+		disp_center[0] = group_displacements[2*i];
+		disp_center[1] = group_displacements[2*i + 1];
+		printf("(%f, %f)\t(%f, %f)\n",init_center[0], init_center[1], disp_center[0], disp_center[1]);
+		for (int j = 0; j < people_per_group; ++j) {
+			float rand_coords[2];
+			rand_coords[0] = distribution(e1);
+			rand_coords[1] = distribution(e1);
+
+			//set x
+			while (dist(rand_coords) > 5) {
+				rand_coords[0] = distribution(e1);
+				rand_coords[1] = distribution(e1);
+			}
 			float x[2];
-			x[0] = initial_center1[0] - j;
-			x[1] = initial_center1[1] + i;
-			people[count] = initialize(x, initial_V, displacement1,0);
-			count += 1;
-		}
-	}
-	count = 0;
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 10; ++j) {
-			float x[2];
-			x[0] = initial_center2[0] + j;
-			x[1] = initial_center2[1] + i;
-			people[count + 50] = initialize(x, initial_V, displacement2,1);
-			count += 1;
+			x[0] = rand_coords[0] + init_center[0];
+			x[1] = rand_coords[1] + init_center[1];
+
+			//set displacement
+			while (dist(rand_coords) > 5) {
+				rand_coords[0] = distribution(e1);
+				rand_coords[1] = distribution(e1);
+			}
+			float displacement[2];
+			displacement[0] = rand_coords[0] + disp_center[0];
+			displacement[1] = rand_coords[1] + disp_center[1];
+
+			//write particle
+			people.push_back(initialize(x, initial_V, displacement, i));
 		}
 	}
 
