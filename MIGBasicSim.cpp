@@ -10,12 +10,18 @@
 
 using namespace std;
 
-float interaction_strength;
-float interaction_range;
+float social_force_strength;
+float social_force_range_b;
+float social_force_radius;
+
+float contact_force_strength;
+float particle_radius;
+
+float disease_radius;
+
 float relaxation_time;
 float desired_speed;
 
-float interaction_radius;
 //float max_interation_force = 20;
 
 float dt;
@@ -33,17 +39,26 @@ void read_parameters(char* parameters_file) {
 	char nothing[100];
 	int also_nothing = 0;
 
-	also_nothing = fscanf(params_file, "%f %s", &interaction_strength, nothing);
-	printf("interaction_strength: %f\n", interaction_strength);
-	also_nothing = fscanf(params_file, "%f %s", &interaction_range, nothing);
-	printf("interaction_range: %f\n", interaction_range);
+	also_nothing = fscanf(params_file, "%f %s", &social_force_strength, nothing);
+	printf("social_force_strength: %f\n", social_force_strength);
+	also_nothing = fscanf(params_file, "%f %s", &social_force_range_b, nothing);
+	printf("social_force_range_b: %f\n", social_force_range_b);
+	also_nothing = fscanf(params_file, "%f %s", &social_force_radius, nothing);
+	printf("social_force_radius: %f\n", social_force_radius);
+
+	also_nothing = fscanf(params_file, "%f %s", &contact_force_strength, nothing);
+	printf("contact_force_strength: %f\n", contact_force_strength);
+	also_nothing = fscanf(params_file, "%f %s", &particle_radius, nothing);
+	printf("particle_radius: %f\n", particle_radius);
+
+	also_nothing = fscanf(params_file, "%f %s", &disease_radius, nothing);
+	printf("disease_radius: %f\n", disease_radius);
+
 	also_nothing = fscanf(params_file, "%f %s", &relaxation_time, nothing);
 	printf("relaxation_time: %f\n", relaxation_time);
 	also_nothing = fscanf(params_file, "%f %s", &desired_speed, nothing);
 	printf("desired_speed: %f\n", desired_speed);
 
-	also_nothing = fscanf(params_file, "%f %s", &interaction_radius, nothing);
-	printf("interaction_radius: %f\n", interaction_radius);
 	also_nothing = fscanf(params_file, "%f %s", &dt, nothing);
 	printf("dt: %f\n", dt);
 	also_nothing = fscanf(params_file, "%f %s", &total_time, nothing);
@@ -87,17 +102,27 @@ float** interaction_force_and_disease_spread(Person p1, Person p2)
 {
 	float* difference = diff(p2.X, p1.X);
 	float distance = dist(difference);
-	float mult_factor = interaction_strength * exp(-1 * distance / interaction_range);
-	float disease_mult_factor = 1.0;
-	if (distance > interaction_radius) {
+
+	//social force
+	float mult_factor = social_force_strength * exp(-1 * distance / social_force_range_b);
+	if (distance > social_force_radius) {
 		mult_factor = 0.0;
-		disease_mult_factor = 0.0;
 	}
 	float force_ans[2];
 	force_ans[0] = mult_factor * difference[0] / distance;
 	force_ans[1] = mult_factor * difference[1] / distance;
 
+	//contact force
+	float contact_mult_factor = contact_force_strength * max(0.0f, 2 * particle_radius - distance);
+	force_ans[0] += contact_mult_factor * difference[0] / distance;
+	force_ans[1] += contact_mult_factor * difference[1] / distance;
+
+	//disease
 	float disease_ans[1];
+	float disease_mult_factor = 1.0;
+	if (distance > disease_radius) {
+		disease_mult_factor = 0.0;
+	}
 	float disease_difference = max(p2.disease - p1.disease, 0.0f);	//if p1 is more more infected than p2, p2 cannot infect p1.
 	float distance_sq = distance * distance;
 	disease_ans[0] = exp(-1*distance) * disease_difference * disease_mult_factor / distance_sq;
@@ -172,7 +197,7 @@ int main()
 			rand_coords[1] = distribution(e1);
 
 			//set x
-			while (dist(rand_coords) > 5) {
+			while (dist(rand_coords) > 10) {
 				rand_coords[0] = distribution(e1);
 				rand_coords[1] = distribution(e1);
 			}
@@ -181,7 +206,7 @@ int main()
 			x[1] = rand_coords[1] + init_center[1];
 
 			//set displacement
-			while (dist(rand_coords) > 5) {
+			while (dist(rand_coords) > 10) {
 				rand_coords[0] = distribution(e1);
 				rand_coords[1] = distribution(e1);
 			}
