@@ -25,6 +25,8 @@ float mask_prob;
 float healthy_life_prob;
 float vaccine_factor;
 
+float check_radius;
+
 float relaxation_time;
 float desired_speed;
 
@@ -33,6 +35,7 @@ float desired_speed;
 float dt;
 float total_time;
 int time_steps_per_frame;
+float group_init_radius;
 int num_groups;
 int people_per_group;
 int num_people;
@@ -73,6 +76,8 @@ void read_parameters(char* parameters_file) {
 	also_nothing = fscanf(params_file, "%f %s", &vaccine_factor, nothing);
 	printf("vaccine_factor: %f\n", vaccine_factor);
 
+	check_radius = social_force_radius + disease_radius;
+
 	also_nothing = fscanf(params_file, "%f %s", &relaxation_time, nothing);
 	printf("relaxation_time: %f\n", relaxation_time);
 	also_nothing = fscanf(params_file, "%f %s", &desired_speed, nothing);
@@ -84,6 +89,8 @@ void read_parameters(char* parameters_file) {
 	printf("total_time: %f\n", total_time);
 	also_nothing = fscanf(params_file, "%d %s", &time_steps_per_frame, nothing);
 	printf("time_steps_per_frame: %d\n", time_steps_per_frame);
+	also_nothing = fscanf(params_file, "%f %s", &group_init_radius, nothing);
+	printf("group_init_radius: %f\n", group_init_radius);
 	also_nothing = fscanf(params_file, "%d %s", &people_per_group, nothing);
 	printf("people_per_group: %d\n", people_per_group);
 	also_nothing = fscanf(params_file, "%d %s", &num_groups, nothing);
@@ -115,6 +122,21 @@ float** interaction_force_and_disease_spread(Person p1, Person p2)
 	difference[0] = p1.X[0] - p2.X[0];
 	difference[1] = p1.X[1] - p2.X[1];
 	float distance = dist(difference);
+
+	//if particles are distant, skip calculations
+	if (distance > check_radius) {
+		float force_ans[2];
+		force_ans[0] = 0.0;
+		force_ans[1] = 0.0;
+		float disease_ans[1];
+		disease_ans[0] = 0.0;
+
+		float* ans[2];
+		ans[0] = force_ans;
+		ans[1] = disease_ans;
+
+		return ans;
+	}
 
 	float vel_difference[2];
 	vel_difference[0] = (p2.X[0] - p1.X[0]) * dt;
@@ -184,6 +206,7 @@ float** net_interaction_force_and_disease_spread(int p1_index, vector<Person>peo
 	float disease_change[1];
 	disease_change[0] = 0.0;
 
+#pragma omp parallel for schedule(dynamic,64)
 	for (int i = 0; i < num_people; ++i) {
 		if (i != p1_index) {
 			float** this_force_and_disease_spread = interaction_force_and_disease_spread(people[p1_index], people[i]);
@@ -234,7 +257,7 @@ int main()
 			rand_coords[1] = distribution(e1);
 
 			//set x
-			while (dist(rand_coords) > 10) {
+			while (dist(rand_coords) > group_init_radius) {
 				rand_coords[0] = distribution(e1);
 				rand_coords[1] = distribution(e1);
 			}
@@ -243,7 +266,7 @@ int main()
 			x[1] = rand_coords[1] + init_center[1];
 
 			//set displacement
-			while (dist(rand_coords) > 10) {
+			while (dist(rand_coords) > group_init_radius) {
 				rand_coords[0] = distribution(e1);
 				rand_coords[1] = distribution(e1);
 			}
@@ -312,10 +335,10 @@ int main()
 			people[j].acceleration[0] = desired_velocity_force[0] + this_net_interaction_force[0];
 			people[j].acceleration[1] = desired_velocity_force[1] + this_net_interaction_force[1];
 
-			float second_disease_change = people[j].disease * (disease_s - people[j].disease) - disease_a * people[j].disease * people[j].disease * people[j].immunity;
+			float disease_sq = people[j].disease * people[j].disease;
+			float second_disease_change = people[j].disease * (disease_s - people[j].disease) - disease_a * disease_sq * people[j].immunity /(1.0+ disease_sq);
 			people[j].disease_change = force_and_disease[1][0] + second_disease_change;
 
-			float disease_sq = people[j].disease * people[j].disease;
 			people[j].immunity_change = -0.5 * disease_sq / (1.0 + disease_sq) * people[j].immunity + people[j].immunity_strength * people[j].immunity + vaccine_factor*tanh(current_time);
 		}
 
