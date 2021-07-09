@@ -1,3 +1,0 @@
-[submodule "visualization-2d"]
-	path = visualization-2d
-	url = https://github.com/laurelch/qt_2d_crowd.git
