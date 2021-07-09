@@ -26,6 +26,7 @@ float desired_speed;
 
 float dt;
 float total_time;
+int time_steps_per_frame;
 int num_groups;
 int people_per_group;
 int num_people;
@@ -63,6 +64,8 @@ void read_parameters(char* parameters_file) {
 	printf("dt: %f\n", dt);
 	also_nothing = fscanf(params_file, "%f %s", &total_time, nothing);
 	printf("total_time: %f\n", total_time);
+	also_nothing = fscanf(params_file, "%d %s", &time_steps_per_frame, nothing);
+	printf("time_steps_per_frame: %d\n", time_steps_per_frame);
 	also_nothing = fscanf(params_file, "%d %s", &people_per_group, nothing);
 	printf("people_per_group: %d\n", people_per_group);
 	also_nothing = fscanf(params_file, "%d %s", &num_groups, nothing);
@@ -100,17 +103,43 @@ Person initialize(float initial_X[], float initial_V[], float desired_displaceme
 
 float** interaction_force_and_disease_spread(Person p1, Person p2)
 {
-	float* difference = diff(p2.X, p1.X);
+	float difference[2];
+	difference[0] = p1.X[0] - p2.X[0];
+	difference[1] = p1.X[1] - p2.X[1];
 	float distance = dist(difference);
 
+	float vel_difference[2];
+	vel_difference[0] = (p2.X[0] - p1.X[0]) * dt;
+	vel_difference[1] = (p2.X[1] - p1.X[1]) * dt;
+	float vel_distance = dist(vel_difference);
+
+	float vel_pos_difference[2];
+	vel_pos_difference[0] = difference[0] - vel_difference[0];
+	vel_pos_difference[1] = difference[1] - vel_difference[1];
+	float vel_pos_distance = dist(vel_pos_difference);
+
 	//social force
+	float distance_plus_vel_pos_distance = distance + vel_pos_distance;
+	float b_ij = 0.5 * sqrt(distance_plus_vel_pos_distance * distance_plus_vel_pos_distance - vel_distance);
+	float middle_factor = 0.5 * distance_plus_vel_pos_distance / b_ij;
+	float mult_factor = social_force_strength * middle_factor * exp(-1 * b_ij / social_force_range_b);
+	if (distance > social_force_radius) {
+		mult_factor = 0.0;
+	}
+	float force_ans[2];
+	//printf("this stuff: distance: %f, vel_pos_distance: %f, vel_pos_difference: (%f,%f)\n", distance, vel_pos_distance, vel_pos_difference[0], vel_pos_difference[1]);
+	force_ans[0] = mult_factor * ((difference[0] / distance) + (vel_pos_difference[0] / vel_pos_distance));
+	force_ans[1] = mult_factor * ((difference[1] / distance) + (vel_pos_difference[1] / vel_pos_distance));
+
+
+	/*//social force
 	float mult_factor = social_force_strength * exp(-1 * distance / social_force_range_b);
 	if (distance > social_force_radius) {
 		mult_factor = 0.0;
 	}
 	float force_ans[2];
 	force_ans[0] = mult_factor * difference[0] / distance;
-	force_ans[1] = mult_factor * difference[1] / distance;
+	force_ans[1] = mult_factor * difference[1] / distance;*/
 
 	//contact force
 	float contact_mult_factor = contact_force_strength * max(0.0f, 2 * particle_radius - distance);
@@ -230,7 +259,7 @@ int main()
 	FILE* fp;
 	int img_count = 1;
 	for (int i = 0; i < num_steps; ++i) {
-		if (i % 100 == 0) {
+		if (i % time_steps_per_frame == 0) {
 			//float current_time = (float(i)) * dt;
 			char t[50];
 			//sprintf(t, "%f.csv", current_time);
@@ -250,8 +279,9 @@ int main()
 			fprintf(fp, "\n");
 		}
 
+		//calculate acceleration and disease change
 		for (int j = 0; j < num_people; ++j) {
-			if(i%100==0)fprintf(fp, "%f,%f,%f,%f,%d,%f\n", people[j].X[0], people[j].X[1], people[j].V[0], people[j].V[1], people[j].group_ID, people[j].disease); //print person position and velocity
+			if (i % time_steps_per_frame == 0)fprintf(fp, "%f,%f,%f,%f,%d,%f\n", people[j].X[0], people[j].X[1], people[j].V[0], people[j].V[1], people[j].group_ID, people[j].disease); //print person position and velocity
 
 			float* desired_velocity = people[j].get_desired_velocity();
 
@@ -261,17 +291,20 @@ int main()
 
 			float** force_and_disease = net_interaction_force_and_disease_spread(j, people);
 			float* this_net_interaction_force = force_and_disease[0];
-			float this_disease_change = force_and_disease[1][0];
 
-			float acceleration[2];
-			acceleration[0] = desired_velocity_force[0] +this_net_interaction_force[0];
-			acceleration[1] = desired_velocity_force[1] +this_net_interaction_force[1];
+			people[j].acceleration[0] = desired_velocity_force[0] + this_net_interaction_force[0];
+			people[j].acceleration[1] = desired_velocity_force[1] + this_net_interaction_force[1];
 
-			people[j].update_pos_vel(dt, acceleration);
-			people[j].update_disease(dt, this_disease_change);
+			people[j].disease_change = force_and_disease[1][0];
+		}
+
+		//update disease, position, and velocity
+		for (int j = 0; j < num_people; ++j) {
+			people[j].update_pos_vel(dt);
+			people[j].update_disease(dt);
 		}
 		//close file
-		if(i%100==0)fclose(fp);
+		if(i% time_steps_per_frame ==0)fclose(fp);
 	}
 	//float current_time = (float(num_steps)) * dt;
 	char t[50];

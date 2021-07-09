@@ -10,6 +10,8 @@ public:
 	float destination[dim];
 	float desired_speed;
 	float disease = 0.0;
+	float acceleration[2];
+	float disease_change = 0.0;
 	float mask = 0.0;
 	int group_ID;
 
@@ -44,15 +46,15 @@ public:
 		return ans;
 	}
 
-	void update_pos_vel(float dt, float acceleration[]) {
+	void update_pos_vel(float dt) {
 		X[0] = X[0] + V[0] * dt;
 		X[1] = X[1] + V[1] * dt;
 		V[0] = V[0] + acceleration[0] * dt;
 		V[1] = V[1] + acceleration[1] * dt;
 	}
 
-	void update_disease(float dt, float disease_in) {
-		disease += disease_in * dt;
+	void update_disease(float dt) {
+		disease += disease_change * dt;
 		if (disease > 1.0) {
 			disease = 1.0;
 		}
