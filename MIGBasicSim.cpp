@@ -17,7 +17,13 @@ float social_force_radius;
 float contact_force_strength;
 float particle_radius;
 
+float disease_a;
+float disease_s;
 float disease_radius;
+float disease_range_rs;
+float mask_prob;
+float healthy_life_prob;
+float vaccine_factor;
 
 float relaxation_time;
 float desired_speed;
@@ -52,8 +58,20 @@ void read_parameters(char* parameters_file) {
 	also_nothing = fscanf(params_file, "%f %s", &particle_radius, nothing);
 	printf("particle_radius: %f\n", particle_radius);
 
+	also_nothing = fscanf(params_file, "%f %s", &disease_a, nothing);
+	printf("disease_a: %f\n", disease_a);
+	also_nothing = fscanf(params_file, "%f %s", &disease_s, nothing);
+	printf("disease_s: %f\n", disease_s);
 	also_nothing = fscanf(params_file, "%f %s", &disease_radius, nothing);
 	printf("disease_radius: %f\n", disease_radius);
+	also_nothing = fscanf(params_file, "%f %s", &disease_range_rs, nothing);
+	printf("disease_range_rs: %f\n", disease_range_rs);
+	also_nothing = fscanf(params_file, "%f %s", &mask_prob, nothing);
+	printf("mask_prob: %f\n", mask_prob);
+	also_nothing = fscanf(params_file, "%f %s", &healthy_life_prob, nothing);
+	printf("healthy_life_prob: %f\n", healthy_life_prob);
+	also_nothing = fscanf(params_file, "%f %s", &vaccine_factor, nothing);
+	printf("vaccine_factor: %f\n", vaccine_factor);
 
 	also_nothing = fscanf(params_file, "%f %s", &relaxation_time, nothing);
 	printf("relaxation_time: %f\n", relaxation_time);
@@ -91,16 +109,6 @@ void read_parameters(char* parameters_file) {
 	fclose(params_file);
 }
 
-Person initialize(float initial_X[], float initial_V[], float desired_displacement[], int group_ID)
-{
-	//Places
-	float destination[2];
-	destination[0] = initial_X[0] + desired_displacement[0];
-	destination[1] = initial_X[1] + desired_displacement[1];
-	return Person(initial_X, initial_V, destination, desired_speed, group_ID);
-}
-
-
 float** interaction_force_and_disease_spread(Person p1, Person p2)
 {
 	float difference[2];
@@ -127,13 +135,12 @@ float** interaction_force_and_disease_spread(Person p1, Person p2)
 		mult_factor = 0.0;
 	}
 	float force_ans[2];
-	//printf("this stuff: distance: %f, vel_pos_distance: %f, vel_pos_difference: (%f,%f)\n", distance, vel_pos_distance, vel_pos_difference[0], vel_pos_difference[1]);
 	force_ans[0] = mult_factor * ((difference[0] / distance) + (vel_pos_difference[0] / vel_pos_distance));
 	force_ans[1] = mult_factor * ((difference[1] / distance) + (vel_pos_difference[1] / vel_pos_distance));
 
 
-	/*//social force
-	float mult_factor = social_force_strength * exp(-1 * distance / social_force_range_b);
+	//old social force
+	/*float mult_factor = social_force_strength * exp(-1 * distance / social_force_range_b);
 	if (distance > social_force_radius) {
 		mult_factor = 0.0;
 	}
@@ -154,7 +161,7 @@ float** interaction_force_and_disease_spread(Person p1, Person p2)
 	}
 	float disease_difference = max(p2.disease - p1.disease, 0.0f);	//if p1 is more more infected than p2, p2 cannot infect p1.
 	float distance_sq = distance * distance;
-	disease_ans[0] = exp(-1*distance) * disease_difference * disease_mult_factor / distance_sq;
+	disease_ans[0] = exp(-1*(distance*p2.mask) / disease_range_rs) * disease_difference * disease_mult_factor / distance_sq;
 
 	float* ans[2];
 	ans[0] = force_ans;
@@ -210,6 +217,7 @@ int main()
 	random_device r;
 	default_random_engine e1(r());
 	uniform_real_distribution<float> distribution(0,5);
+	uniform_real_distribution<float> probability(0, 1);
 	printf("num_groups %d\n",num_groups);
 	printf("people_per_group %d\n",people_per_group);
 	for (int i = 0; i < num_groups; ++i) {
@@ -243,8 +251,17 @@ int main()
 			displacement[0] = rand_coords[0] + disp_center[0];
 			displacement[1] = rand_coords[1] + disp_center[1];
 
+			//set destination
+			float destination[2];
+			destination[0] = x[0] + displacement[0];
+			destination[1] = x[1] + displacement[1];
+
+			bool masked = probability(e1) < mask_prob;
+			bool healthy_life = probability(e1) < healthy_life_prob;
+
 			//write particle
-			people.push_back(initialize(x, initial_V, displacement, i));
+			people.push_back(Person(x, initial_V, destination, desired_speed, i, disease_range_rs, masked, healthy_life));
+			
 		}
 	}
 
@@ -259,8 +276,8 @@ int main()
 	FILE* fp;
 	int img_count = 1;
 	for (int i = 0; i < num_steps; ++i) {
+		float current_time = (float(i)) * dt;
 		if (i % time_steps_per_frame == 0) {
-			//float current_time = (float(i)) * dt;
 			char t[50];
 			//sprintf(t, "%f.csv", current_time);
 			sprintf(t, "%04d.csv",img_count);
@@ -279,7 +296,7 @@ int main()
 			fprintf(fp, "\n");
 		}
 
-		//calculate acceleration and disease change
+		//calculate acceleration and disease/immunity change
 		for (int j = 0; j < num_people; ++j) {
 			if (i % time_steps_per_frame == 0)fprintf(fp, "%f,%f,%f,%f,%d,%f\n", people[j].X[0], people[j].X[1], people[j].V[0], people[j].V[1], people[j].group_ID, people[j].disease); //print person position and velocity
 
@@ -295,13 +312,17 @@ int main()
 			people[j].acceleration[0] = desired_velocity_force[0] + this_net_interaction_force[0];
 			people[j].acceleration[1] = desired_velocity_force[1] + this_net_interaction_force[1];
 
-			people[j].disease_change = force_and_disease[1][0];
+			float second_disease_change = people[j].disease * (disease_s - people[j].disease) - disease_a * people[j].disease * people[j].disease * people[j].immunity;
+			people[j].disease_change = force_and_disease[1][0] + second_disease_change;
+
+			float disease_sq = people[j].disease * people[j].disease;
+			people[j].immunity_change = -0.5 * disease_sq / (1.0 + disease_sq) * people[j].immunity + people[j].immunity_strength * people[j].immunity + vaccine_factor*tanh(current_time);
 		}
 
-		//update disease, position, and velocity
+		//update position, velocity, disease, immunity
 		for (int j = 0; j < num_people; ++j) {
 			people[j].update_pos_vel(dt);
-			people[j].update_disease(dt);
+			people[j].update_disease_immunity(dt);
 		}
 		//close file
 		if(i% time_steps_per_frame ==0)fclose(fp);
