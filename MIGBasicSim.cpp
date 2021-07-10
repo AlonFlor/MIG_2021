@@ -239,7 +239,7 @@ int main()
 	vector<Person> people;
 	random_device r;
 	default_random_engine e1(r());
-	uniform_real_distribution<float> distribution(0,5);
+	uniform_real_distribution<float> distribution(-1*group_init_radius, group_init_radius);
 	uniform_real_distribution<float> probability(0, 1);
 	printf("num_groups %d\n",num_groups);
 	printf("people_per_group %d\n",people_per_group);
@@ -266,10 +266,6 @@ int main()
 			x[1] = rand_coords[1] + init_center[1];
 
 			//set displacement
-			while (dist(rand_coords) > group_init_radius) {
-				rand_coords[0] = distribution(e1);
-				rand_coords[1] = distribution(e1);
-			}
 			float displacement[2];
 			displacement[0] = rand_coords[0] + disp_center[0];
 			displacement[1] = rand_coords[1] + disp_center[1];
