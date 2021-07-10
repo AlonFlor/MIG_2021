@@ -76,7 +76,7 @@ void read_parameters(char* parameters_file) {
 	also_nothing = fscanf(params_file, "%f %s", &vaccine_factor, nothing);
 	printf("vaccine_factor: %f\n", vaccine_factor);
 
-	check_radius = social_force_radius + disease_radius;
+	check_radius = max(social_force_radius, disease_radius) + 0.1;
 
 	also_nothing = fscanf(params_file, "%f %s", &relaxation_time, nothing);
 	printf("relaxation_time: %f\n", relaxation_time);
@@ -332,7 +332,8 @@ int main()
 			people[j].acceleration[1] = desired_velocity_force[1] + this_net_interaction_force[1];
 
 			float disease_sq = people[j].disease * people[j].disease;
-			float second_disease_change = people[j].disease * (disease_s - people[j].disease) - disease_a * disease_sq * people[j].immunity /(1.0+ disease_sq);
+			float second_disease_change = 0.;
+			if(disease_a!=0)second_disease_change = people[j].disease* (disease_s - people[j].disease) - disease_a * disease_sq * people[j].immunity / (1.0 + disease_sq);
 			people[j].disease_change = force_and_disease[1][0] + second_disease_change;
 
 			people[j].immunity_change = -0.5 * disease_sq / (1.0 + disease_sq) * people[j].immunity + people[j].immunity_strength * people[j].immunity + vaccine_factor*tanh(current_time);
