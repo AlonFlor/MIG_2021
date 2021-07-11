@@ -16,7 +16,7 @@ public:
 	float disease_change = 0.0;
 	float mask = 0.0;
 
-	float immunity = 0.0;
+	float immunity = 0.5;
 	float immunity_change = 0.0;
 	float immunity_strength = -0.1;
 

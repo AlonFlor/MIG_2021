@@ -312,12 +312,20 @@ int main()
 			fprintf(fp, ",v_y");
 			fprintf(fp, ",group_ID");
 			fprintf(fp, ",disease");
+			if (disease_a != 0)fprintf(fp, ",immunity");
 			fprintf(fp, "\n");
 		}
 
 		//calculate acceleration and disease/immunity change
 		for (int j = 0; j < num_people; ++j) {
-			if (i % time_steps_per_frame == 0)fprintf(fp, "%f,%f,%f,%f,%d,%f\n", people[j].X[0], people[j].X[1], people[j].V[0], people[j].V[1], people[j].group_ID, people[j].disease); //print person position and velocity
+			if (i % time_steps_per_frame == 0){
+				if (disease_a == 0) {
+					fprintf(fp, "%f,%f,%f,%f,%d,%f\n", people[j].X[0], people[j].X[1], people[j].V[0], people[j].V[1], people[j].group_ID, people[j].disease); //print person data
+				}
+				else {
+					fprintf(fp, "%f,%f,%f,%f,%d,%f,%f\n", people[j].X[0], people[j].X[1], people[j].V[0], people[j].V[1], people[j].group_ID, people[j].disease, people[j].immunity); //print person data
+				}
+			}
 
 			float* desired_velocity = people[j].get_desired_velocity();
 
@@ -362,6 +370,7 @@ int main()
 	fprintf(fp, ",v_y");
 	fprintf(fp, ",group_ID");
 	fprintf(fp, ",disease");
+	if (disease_a != 0)fprintf(fp, ",immunity");
 	fprintf(fp, "\n");
 
 	//print people positions and velocities
