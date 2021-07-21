@@ -13,7 +13,9 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     void addParticle(QGraphicsItem*,float,float,float,int,float disease=0);
+    void toggleDisplayMode();
     void setCount(int);
+    void setScale(float);
     int getCount();
 //    void setParticleStatus(int i,std::vector<float>);
     void setParticleStatus(int i,struct status);
@@ -22,7 +24,7 @@ public:
 //    void setEllipseSize(int);
 private:
     int count;
-//    int ellipse_size;
+    float scale;
     QVector<Particle*> particles;
 //    int window_h;
 };

@@ -26,12 +26,16 @@ public:
     // QGraphicsItem interface
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
+    void toggleDisplayMode();
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     float getX();
     float getY();
+    float getR();
     float getDirection();
     int getGroup();
     float getDisease();
+    struct status getStatus();
+
 
     void setX(float);
     void setY(float);
@@ -39,13 +43,14 @@ public:
     void setDirection(float,float);
     void setGroup(int);
     void setDisease(float);
-
+    void setStatus(struct status);
+    void setScale(float);
 //    void setStatus(float,float,float,float,int,float);
 //    void setStatus(float*);
 //    void setStatus(std::vector<float>);
-    void setStatus(struct status);
+
 //    std::vector<float> getStatus();
-    struct status getStatus();
+
 //    static std::vector<float> getStatusFormat(float const x=NULL,float const y=NULL,float const dx=NULL,float const dy=NULL,int const group=NULL,float const disease=NULL);
 //    void appendHistory();
     static std::string statusString(struct status s);
@@ -58,6 +63,8 @@ private:
 //    std::vector<float> direction={0,0};
     float radius;
     struct status s;
+    int displayMode;
+    float scale;
 };
 
 #endif // PARTICLE_H

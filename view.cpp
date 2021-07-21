@@ -32,10 +32,13 @@ View::View(QGraphicsScene *scene,QWidget *parent): graphicsScene(scene)
 {
     Q_UNUSED(parent);
     setScene(scene);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     crowd = new Crowd();
     scene->addItem(crowd);
-    scene->setSceneRect(QRect(-40,-40,80,80));
-    scale(9,9);
+    float scale=8.1;
+    scene->setSceneRect(QRect(-50*scale,-40*scale,100*scale,80*scale));
+    setMouseTracking(true);
+    viewport()->setMouseTracking(true);
 }
 
 View::~View()
@@ -60,8 +63,7 @@ View::~View()
 //    event->accept();
 //}
 
-void View::keyPressEvent(QKeyEvent *event)
-{
+void View::keyPressEvent(QKeyEvent *event){
     if(event->isAutoRepeat()) {
         return;
     }
@@ -69,8 +71,7 @@ void View::keyPressEvent(QKeyEvent *event)
         case Qt::Key_Space:
             togglePause();
             std::cout<<"View::keyPressEvent space pressed. pause="<<getPauseCondition()<<std::endl;
-
-        break;
+            break;
         case Qt::Key_S:
             incrementStep();
             std::cout<<"View::keyPressEvent S pressed. step="<<getStepCount()<<std::endl;
@@ -79,7 +80,14 @@ void View::keyPressEvent(QKeyEvent *event)
             restart();
             std::cout<<"View::keyPressEvent R pressed. step="<<getStepCount()<<std::endl;
             break;
+        case Qt::Key_D:
+            toggleDisplayMode();
+            std::cout<<"View::keyPressEvent D pressed. step="<<getStepCount()<<std::endl;
     }
+}
+
+void View::toggleDisplayMode(){
+    crowd->toggleDisplayMode();
 }
 
 void View::togglePause(){
@@ -87,14 +95,17 @@ void View::togglePause(){
 }
 
 void View::incrementStep(){
-    step_count++;
-    simulation->update();
+    for(int i=0;i<step_size;++i){
+        step_count++;
+        simulation->update();
+    }
+    display();
 }
 
 /**
- * @brief update view with respect to simulation
+ * @brief display simulation
  */
-void View::update(){
+void View::display(){
     int numPeople=simulation->getNumPeople();
     for(int i=0;i<numPeople;++i){
         struct status s=simulation->getStatus(i);
@@ -120,7 +131,7 @@ void View::setPauseCondition(int p){
 
 void View::setSimulation(MIGBasicSim* sim){
     simulation=sim;
-    update();
+    display();
 }
 
 void View::setStepCount(int s)
@@ -134,28 +145,10 @@ void View::setCrowdCount(int count){
     scene()->addItem(crowd);
 }
 
-//void View::setParticle(int i, std::vector<float> status){
-//    status[0]=status[0]*scaleX+offsetX;
-//    status[1]=status[1]*scaleY+offsetY;
-//    crowd->setParticleStatus(i,status);
-//}
-
-/**
- * @brief scale up the particle positions to fit view
- * @param s
- */
-void View::setScaleX(int s){
-    scaleX = s;
+void View::setStepSize(int s){
+    step_size=s;
 }
 
-void View::setOffsetX(int o){
-    offsetX = o;
-}
-
-void View::setScaleY(int s){
-    scaleY = s;
-}
-
-void View::setOffsetY(int o){
-    offsetY = o;
+void View::setScale(float s){
+    crowd->setScale(s);
 }

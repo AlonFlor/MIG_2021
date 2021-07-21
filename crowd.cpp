@@ -7,15 +7,17 @@ Crowd::Crowd(){
     setCount(2);
     addParticle(this,0,590,radius,0);
     addParticle(this,590,1,radius,1);
+    setAcceptHoverEvents(true);
 }
 
 Crowd::Crowd(int count){
     float radius=0.5;
     setCount(count);
+    setAcceptHoverEvents(true);
     Particle* particle;
     for(int i=0;i<getCount();++i){
-        float x=rand()%600;
-        float y=rand()%600;
+        float x=rand()%80-40;
+        float y=rand()%80-40;
         particle = new Particle(this,x,y,radius);
         if(i<getCount()/2){
             particle->setGroup(0);
@@ -54,8 +56,20 @@ void Crowd::addParticle(QGraphicsItem *parent,float x,float y,float radius,int g
     particles.push_back(particlePtr);
 }
 
+void Crowd::toggleDisplayMode(){
+    Particle* particle;
+    foreach(particle,particles)
+        particle->toggleDisplayMode();
+}
+
 void Crowd::setCount(int n){
     count = n;
+}
+
+void Crowd::setScale(float s){
+    Particle* particle;
+    foreach(particle,particles)
+        particle->setScale(s);
 }
 
 int Crowd::getCount(){
@@ -68,6 +82,7 @@ int Crowd::getCount(){
 
 void Crowd::setParticleStatus(int i,struct status s){
     particles[i]->setStatus(s);
+    //std::cout<<"setParticleStatus particle["<<i<<"]=["<<s.x<<","<<s.y<<"]"<<std::endl;
 }
 
 //int Crowd::getWindowH(){

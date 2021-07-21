@@ -19,9 +19,10 @@ public:
     ~View();
 //    void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void toggleDisplayMode();
     void togglePause();
     void incrementStep();
-    void update();
+    void display();
     void restart();
 
     // getters
@@ -32,13 +33,9 @@ public:
     void setSimulation(MIGBasicSim* sim);
     void setPauseCondition(int);
     void setStepCount(int);
-    //void setParticle(int,float,float,float,float,int,float);
     void setCrowdCount(int);
-    void setParticle(int,std::vector<float>);
-    void setScaleX(int);
-    void setOffsetX(int);
-    void setScaleY(int);
-    void setOffsetY(int);
+    void setStepSize(int);
+    void setScale(float);
 private:
     QGraphicsScene* graphicsScene;
     Crowd* crowd;
@@ -47,10 +44,7 @@ private:
     int step_count;
     int pause;
     int window_h;
-    int scaleX;
-    int offsetX;
-    int scaleY;
-    int offsetY;
+    int step_size;
 };
 
 #endif // VIEW_H

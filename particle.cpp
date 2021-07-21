@@ -8,13 +8,16 @@ Particle::Particle(QGraphicsItem *parent,float x,float y,float radius)
     s.x=x;
     s.y=y;
     this->radius=radius;
-
+    displayMode=0;
     setFlags(ItemIsSelectable);
-    setAcceptHoverEvents(true);
+    //setAcceptHoverEvents(true);
     //TODO: display info with hover event
 }
 
+Particle::~Particle(){}
+
 QRectF Particle::boundingRect() const{
+    qreal radius=this->radius*scale;
     return QRectF(0,0,radius*2,radius*2);
 }
 
@@ -23,29 +26,51 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     Q_UNUSED(option);
 
     QPen pen;
-    qreal width = radius*0.2;
+    float x=getX();
+    float y=getY();
+    float r=getR();
+    qreal width = r*0.2;
     pen.setWidthF(width);
     painter->setPen(pen);
     QBrush b = painter->brush();
-        painter->setBrush(b);
+    painter->setBrush(b);
 
-    if(s.group==0){
-        painter->setBrush(QColor(255,0,0));
-    }else if(s.group==1){
-        painter->setBrush(QColor(0,0,255));
+    //std::cout<<"Particle::paint x="<<x<<", y="<<y<<std::endl;
+    if(displayMode==0){
+        if(s.group==0){
+            painter->setBrush(QColor(255,0,0));
+        }else if(s.group==1){
+            painter->setBrush(QColor(0,0,255));
+        }
+        painter->drawEllipse(QRect(x,y,r*2,r*2));
+    }else if(displayMode==1){
+        //std::cout<<"paint() displayMode="<<displayMode;
+        painter->setBrush(QColor(255*(1-s.disease),255*(1-s.disease),255*(1-s.disease)));
+        painter->drawEllipse(QRect(x,y,r*2,r*2));
     }
-    painter->drawEllipse(QRect(s.x,s.y,radius*2,radius*2));
-//    painter->setBrush(QColor(255*(1-disease),255*(1-disease),255*(1-disease)));
-//    painter->drawEllipse(QRect(640,0,radius*2,radius*2));
+}
+
+void Particle::toggleDisplayMode(){
+    displayMode=(displayMode+1)%2;
+    //std::cout<<"toggleDisplayMode() displayMode="<<displayMode;
+    update();
+}
+
+void Particle::hoverEnterEvent(QGraphicsSceneHoverEvent *event){
+    std::cout<<"Particle::hover x="<<s.x<<", y="<<s.y<<std::endl;
 }
 
 //getters
 float Particle::getX(){
-    return s.x;
+    return s.x*scale;
 }
 
 float Particle::getY(){
-    return s.y;
+    return s.y*scale;
+}
+
+float Particle::getR(){
+    return radius*scale;
 }
 
 float Particle::getDirection(){
@@ -56,12 +81,13 @@ int Particle::getGroup(){
     return s.group;
 }
 
-void Particle::setDisease(float d){
-    s.disease = d;
-}
 
 float Particle::getDisease(){
     return s.disease;
+}
+
+struct status Particle::getStatus(){
+    return s;
 }
 
 //setters
@@ -85,6 +111,19 @@ void Particle::setDirection(float dx,float dy){
 
 void Particle::setGroup(int g){
     s.group = g;
+}
+
+void Particle::setDisease(float d){
+    s.disease = d;
+}
+
+void Particle::setStatus(struct status s){
+    this->s=s;
+    update();
+}
+
+void Particle::setScale(float s){
+    scale=s;
 }
 
 //void Particle::setStatus(float x,float y,float dx,float dy,int group,float dss){
@@ -127,10 +166,6 @@ void Particle::setGroup(int g){
 //    if(disease){this->disease=disease;}
 //}
 
-void Particle::setStatus(struct status s){
-    this->s=s;
-    update();
-}
 
 //void Particle::appendHistory(){
 //    float* fp;
@@ -138,10 +173,6 @@ void Particle::setStatus(struct status s){
 //    fp = status;
 //    history.push_back(fp);
 //}
-
-struct status Particle::getStatus(){
-    return s;
-}
 
 // all possible status of a particle
 //vector<float> Particle::getStatusFormat(float const x,float const y,float const dx,float const dy,int const group,float const disease){
