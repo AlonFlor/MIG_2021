@@ -11,7 +11,7 @@
 #include <math.h>
 #include <Windows.h>
 #include "Person.h"
-#include "view.h"
+//#include "view.h"
 
 //float interaction_strength = 5.0;
 //float interaction_range = 1.0;
@@ -30,29 +30,35 @@ class MIGBasicSim
 public:
     MIGBasicSim();
     ~MIGBasicSim();
-    void update(View* v=nullptr);
-    void updateOnePerson(Person*,View*);
+    void update();
+    void updateOnePerson(Person*);
     //Person initialize(float initial_X[], float initial_V[], float desired_displacement[], int group_ID);
     float** interaction_force_and_disease_spread(Person p1, Person p2);
     float** net_interaction_force_and_disease_spread(int p1_index, Person people[]);
     std::vector<std::vector<float>> interaction_force_and_disease_spread(Person*,Person*);
     std::vector<std::vector<float>> net_interaction_force_and_disease_spread(Person*);
+    std::vector<std::vector<float>> concurrent_net_interaction_force_and_disease_spread(Person* one);
     void outputCSV(int);
-    int getNumPeople();
+
+    //setters
     void setNumPeople(int);
     void setInfection(int,int);
-    float getInteractionStrength();
     void setInteractionStrength(float);
-    float getInteractionRange();
     void setInteractionRange(float);
-    float getRelaxationTime();
     void setRelaxationTime(float);
-    float getDesiredSpeed();
     void setDesiredSpeed(float);
-    float getInteractionRadius();
     void setInteractionRadius(float);
-    float getMaxInteractionForce();
     void setMaxInteractionForce(float);
+
+    //getters
+    int getNumPeople();
+    float getInteractionStrength();
+    float getInteractionRange();
+    float getRelaxationTime();
+    float getDesiredSpeed();
+    float getInteractionRadius();
+    float getMaxInteractionForce();
+    status getStatus(int);
 private:
     std::vector<Person*> people;
     int numPeople;

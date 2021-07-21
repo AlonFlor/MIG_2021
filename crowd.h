@@ -12,17 +12,19 @@ public:
     // QGraphicsItem interface
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void addParticle(QGraphicsItem*,float,float,float,int,float disease=0);
     void setCount(int);
     int getCount();
-    void setParticleStatus(int i,std::vector<float>);
-    int getWindowH();
-    int getEllipseSize();
-    void setEllipseSize(int);
+//    void setParticleStatus(int i,std::vector<float>);
+    void setParticleStatus(int i,struct status);
+//    int getWindowH();
+//    int getEllipseSize();
+//    void setEllipseSize(int);
 private:
     int count;
-    int ellipse_size;
+//    int ellipse_size;
     QVector<Particle*> particles;
-    int window_h;
+//    int window_h;
 };
 
 #endif // CROWD_H

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <stdio.h>
+#include "particle.h"
 class Person{
 public:
     static const int dim = 2;
@@ -28,15 +29,17 @@ public:
     std::vector<float> getDesiredVelocity();
     void setDesiredVelocity();
     //void update_pos_vel(float dt, float acceleration[]);
+    void update(float,std::vector<std::vector<float>>);
     void updateXV(float,std::vector<float>);
-    void updateDisease(float dt, float disease_in);
+    void updateDisease(float dt,float disease_in);
     float getDisease();
     void setDisease(int);
-    std::vector<float> getStatus();
+    //std::vector<float> getStatus();
+    status getStatus();
     int getID();
-    static std::vector<float> diff(std::vector<float> a, std::vector<float> b);
+    static std::vector<float> diff(std::vector<float> a,std::vector<float> b);
     float dist(Person*);
-    float dist(std::vector<float>, std::vector<float>);
+    float dist(std::vector<float>,std::vector<float>);
 private:
     int people_ID;
     int group_ID;

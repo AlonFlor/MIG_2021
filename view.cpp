@@ -1,5 +1,6 @@
 #include "view.h"
 
+/*
 View::View(QWidget *parent)
     : QGraphicsView(parent)
 {
@@ -15,14 +16,26 @@ View::View(QWidget *parent)
 
     crowd = new Crowd();
     scene()->addItem(crowd);
-    setAlignment(Qt::AlignTop|Qt::AlignLeft);
-    scene()->setSceneRect(QRect(0,0,1300,650));
-    QAbstractScrollArea::setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QAbstractScrollArea::setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    setAlignment(Qt::AlignTop|Qt::AlignLeft);
+    scene()->setSceneRect(QRect(0,0,600,600));
+//    QAbstractScrollArea::setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    QAbstractScrollArea::setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setScaleX(10);
     setOffsetX(360);
     setScaleY(10);
     setOffsetY(300);
+    setWindowTitle("Crowd Simulation");
+}
+*/
+
+View::View(QGraphicsScene *scene,QWidget *parent): graphicsScene(scene)
+{
+    Q_UNUSED(parent);
+    setScene(scene);
+    crowd = new Crowd();
+    scene->addItem(crowd);
+    scene->setSceneRect(QRect(-40,-40,80,80));
+    scale(9,9);
 }
 
 View::~View()
@@ -31,20 +44,21 @@ View::~View()
     delete crowd;
 }
 
-void View::wheelEvent(QWheelEvent *event)
-{
-    QGraphicsView::wheelEvent(event);
-    if(event->isAccepted()){
-        return;
-    }
-    const float factor = 1.1;
-    if(event->angleDelta().y()>0){
-        scale(factor,factor);
-    }else{
-        scale(1/factor,1/factor);
-    }
-    event->accept();
-}
+//void View::wheelEvent(QWheelEvent *event)
+//{
+//    //Q_UNUSED(event);
+//    QGraphicsView::wheelEvent(event);
+//    if(event->isAccepted()){
+//        return;
+//    }
+//    const float factor = 1.1;
+//    if(event->angleDelta().y()>0){
+//        scale(factor,factor);
+//    }else{
+//        scale(1/factor,1/factor);
+//    }
+//    event->accept();
+//}
 
 void View::keyPressEvent(QKeyEvent *event)
 {
@@ -68,35 +82,50 @@ void View::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void View::setStepCount(int s)
-{
-    this->step_count = s;
+void View::togglePause(){
+    pause = -pause;
 }
 
-void View::incrementStep()
-{
+void View::incrementStep(){
     step_count++;
+    simulation->update();
 }
 
-int View::getStepCount()
-{
-    return step_count;
+/**
+ * @brief update view with respect to simulation
+ */
+void View::update(){
+    int numPeople=simulation->getNumPeople();
+    for(int i=0;i<numPeople;++i){
+        struct status s=simulation->getStatus(i);
+        crowd->setParticleStatus(i,s);
+    }
 }
 
 void View::restart(){
     setStepCount(0);
 }
 
-void View::setPauseCondition(int p){
-    this->pause = p;
-}
-
-void View::togglePause(){
-    pause = -pause;
+int View::getStepCount(){
+    return step_count;
 }
 
 int View::getPauseCondition(){
     return pause;
+}
+
+void View::setPauseCondition(int p){
+    this->pause = p;
+}
+
+void View::setSimulation(MIGBasicSim* sim){
+    simulation=sim;
+    update();
+}
+
+void View::setStepCount(int s)
+{
+    this->step_count = s;
 }
 
 void View::setCrowdCount(int count){
@@ -105,11 +134,11 @@ void View::setCrowdCount(int count){
     scene()->addItem(crowd);
 }
 
-void View::setParticle(int i, std::vector<float> status){
-    status[0]=status[0]*scaleX+offsetX;
-    status[1]=status[1]*scaleY+offsetY;
-    crowd->setParticleStatus(i,status);
-}
+//void View::setParticle(int i, std::vector<float> status){
+//    status[0]=status[0]*scaleX+offsetX;
+//    status[1]=status[1]*scaleY+offsetY;
+//    crowd->setParticleStatus(i,status);
+//}
 
 /**
  * @brief scale up the particle positions to fit view
