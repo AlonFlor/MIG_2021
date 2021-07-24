@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#include <random>
 #include <Windows.h>
 #include "Person.h"
 //#include "view.h"
@@ -30,6 +31,9 @@ class MIGBasicSim
 public:
     MIGBasicSim();
     ~MIGBasicSim();
+    void readDescriptionTxt();
+    void initializeCrowd();
+    void initializeCrowdNoMask();
     void update();
     void updateOnePerson(Person*);
     //Person initialize(float initial_X[], float initial_V[], float desired_displacement[], int group_ID);
@@ -47,7 +51,6 @@ public:
     void setInteractionRange(float);
     void setRelaxationTime(float);
     void setDesiredSpeed(float);
-    void setInteractionRadius(float);
     void setMaxInteractionForce(float);
 
     //getters
@@ -56,25 +59,48 @@ public:
     float getInteractionRange();
     float getRelaxationTime();
     float getDesiredSpeed();
-    float getInteractionRadius();
     float getMaxInteractionForce();
     status getStatus(int);
 private:
+    float dt;
+    float total_time;
+    float time_till_now;
+    int time_steps_per_frame;
+
     std::vector<Person*> people;
-    int numPeople;
-    int group;
+    int num_people;
+    int num_groups;
     int row_in_group;
     int column_in_group;
-    std::vector<std::vector<float>> initial_centers;
-    std::vector<std::vector<float>> displacements;
     std::vector<float> initial_velocity;
 
     float interaction_strength;
     float interaction_range;
     float relaxation_time;
     float desired_speed;
-    float interaction_radius;
     float max_interation_force;
+
+    float social_force_strength;
+    float social_force_range_b;
+    float social_force_radius;
+    float contact_force_strength;
+
+    int disease_a;
+    float disease_s;
+    float disease_radius;
+    float check_radius;
+    float disease_range_rs;
+    float mask_prob;
+    float healthy_life_prob;
+    float vaccine_factor;
+
+    float particle_radius;
+    float group_init_radius;
+    int people_per_group;
+    std::vector<std::vector<float>> initial_centers;
+    std::vector<std::vector<float>> displacements;
+
+    struct simData sim_data;
 };
 
 #endif

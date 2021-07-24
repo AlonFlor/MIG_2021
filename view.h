@@ -22,6 +22,7 @@ public:
     void toggleDisplayMode();
     void togglePause();
     void incrementStep();
+    void bigStep();
     void display();
     void restart();
 
