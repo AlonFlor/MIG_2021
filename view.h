@@ -6,6 +6,8 @@
 #include <QGraphicsScene>
 #include <QWheelEvent>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsSimpleTextItem>
+#include <QPointF>
 #include "crowd.h"
 #include "MIGBasicSim.h"
 
@@ -18,7 +20,7 @@ public:
     View(QGraphicsScene *scene=nullptr,QWidget *parent=nullptr);
     ~View();
 //    void wheelEvent(QWheelEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+    virtual void keyPressEvent(QKeyEvent *event) override;
     void toggleDisplayMode();
     void togglePause();
     void incrementStep();
@@ -37,10 +39,16 @@ public:
     void setCrowdCount(int);
     void setStepSize(int);
     void setScale(float);
+
+    void addParticles();
+    void printItems();
+protected:
+    virtual void mousePressEvent(QMouseEvent *event) override;
 private:
     QGraphicsScene* graphicsScene;
     Crowd* crowd;
     MIGBasicSim* simulation;
+    QGraphicsTextItem* text;
     int particle_count;
     int step_count;
     int pause;

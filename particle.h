@@ -2,8 +2,9 @@
 #define PARTICLE_H
 
 #include <iostream>
-#include <QGraphicsEllipseItem>
-#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
+#include <QGraphicsTextItem>
 #include <QList>
 #include <vector>
 #include <string>
@@ -17,25 +18,24 @@ struct status{
     float disease{NAN};
 };
 
-class Particle : public QGraphicsEllipseItem
+class Particle : public QGraphicsItem
 {
 public:
     Particle();
-    Particle(QGraphicsItem*,float,float,float);
+    Particle(float,float,float);
     ~Particle();
     // QGraphicsItem interface
-    QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    virtual QRectF boundingRect() const override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     void toggleDisplayMode();
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+
     float getX();
     float getY();
-    float getR();
+    float getR() const;
     float getDirection();
     int getGroup();
     float getDisease();
     struct status getStatus();
-
 
     void setX(float);
     void setY(float);
@@ -45,15 +45,16 @@ public:
     void setDisease(float);
     void setStatus(struct status);
     void setScale(float);
-//    void setStatus(float,float,float,float,int,float);
-//    void setStatus(float*);
-//    void setStatus(std::vector<float>);
-
-//    std::vector<float> getStatus();
-
-//    static std::vector<float> getStatusFormat(float const x=NULL,float const y=NULL,float const dx=NULL,float const dy=NULL,int const group=NULL,float const disease=NULL);
+    void setID(int);
 //    void appendHistory();
     static std::string statusString(struct status s);
+    void setTextPointer(QGraphicsTextItem *);
+    void setStatusDisplayString();
+protected:
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
 private:
 //    float x=0;
 //    float y=0;
@@ -61,10 +62,15 @@ private:
 //    float disease=0;
 //    QList<float*> history;
 //    std::vector<float> direction={0,0};
+    int id;
     float radius;
     struct status s;
-    int displayMode;
+    int display_mode;
     float scale;
+    bool hovered;
+    bool selected;
+    QGraphicsTextItem *text;
+    QString statusDisplayString;
 };
 
 #endif // PARTICLE_H

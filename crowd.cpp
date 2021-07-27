@@ -1,24 +1,22 @@
 #include <QPainter>
 #include "crowd.h"
-using namespace std;
 
 Crowd::Crowd(){
     float radius=0.3;
     setCount(2);
-    addParticle(this,0,590,radius,0);
-    addParticle(this,590,1,radius,1);
-    setAcceptHoverEvents(true);
+    addParticle(0,590,radius,0);
+    addParticle(590,1,radius,1);
 }
 
 Crowd::Crowd(int count){
     float radius=0.5;
     setCount(count);
-    setAcceptHoverEvents(true);
     Particle* particle;
     for(int i=0;i<getCount();++i){
         float x=rand()%80-40;
         float y=rand()%80-40;
-        particle = new Particle(this,x,y,radius);
+        particle = new Particle(x,y,radius);
+        particle->setID(i);
         if(i<getCount()/2){
             particle->setGroup(0);
         }else{
@@ -28,7 +26,7 @@ Crowd::Crowd(int count){
         particle->setDisease(disease);
         //cout<<"particle disease="<<particle->getDisease()<<"=>"<<disease<<endl;
         particles.push_back(particle);
-        //cout<<"constructor 2 particle["<<i<<"]="<<particle<<", x="<<particle->getX()<<", y="<<particle->getY()<<endl;
+        //std::cout<<"Crowd-particle["<<i<<"]="<<particle<<", x="<<particle->getX()<<", y="<<particle->getY()<<std::endl;
     }
 }
 
@@ -38,19 +36,9 @@ Crowd::~Crowd(){
         delete particle;
 }
 
-QRectF Crowd::boundingRect() const{
-    return QRectF(0,0,10,10);
-}
-
-void Crowd::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
-    Q_UNUSED(painter);
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-}
-
-void Crowd::addParticle(QGraphicsItem *parent,float x,float y,float radius,int group,float disease){
+void Crowd::addParticle(float x,float y,float radius,int group,float disease){
     Particle* particlePtr;
-    particlePtr=new Particle(parent,x,y,radius);
+    particlePtr=new Particle(x,y,radius);
     particlePtr->setGroup(group);
     particlePtr->setDisease(disease);
     particles.push_back(particlePtr);
@@ -78,4 +66,14 @@ int Crowd::getCount(){
 
 void Crowd::setParticleStatus(int i,struct status s){
     particles[i]->setStatus(s);
+}
+
+QVector<Particle*> Crowd::getParticles(){
+    return particles;
+}
+
+void Crowd::setTextPointer(QGraphicsTextItem* text){
+    for(int i=0;i<particles.size();++i){
+        particles[i]->setTextPointer(text);
+    }
 }
