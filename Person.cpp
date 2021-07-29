@@ -15,6 +15,8 @@ Person::Person(int i,std::vector<float> X,std::vector<float> V,std::vector<float
     people_ID=i;
     this->X=X;
     this->V=V;
+    X0=X;
+    V0=V;
     group_ID=group;
     destination=dest;
     setDesiredSpeed(speed);
@@ -80,6 +82,12 @@ void Person::updateImmunity(float dt,float current_time,float vaccine_factor){
     float immunity_change=-0.5*disease_sq/(1.0+disease_sq)*immunity+immunity_strength*immunity+vaccine_factor*tanh(current_time);
     immunity+=immunity_change*dt;
     immunity=clamp(immunity,0,1);
+}
+
+void Person::reset(){
+    X=X0;
+    V=V0;
+    disease=0;
 }
 
 void Person::printStatus(){

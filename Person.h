@@ -33,6 +33,7 @@ public:
     void updateDisease(struct simData,float);
     void updateImmunity(float,float);
     void updateImmunity(float,float,float);
+    void reset();
     void printStatus();
 
     float getDesiredSpeed();
@@ -54,6 +55,8 @@ public:
 private:
     int people_ID;
     int group_ID;
+    std::vector<float> X0;
+    std::vector<float> V0;
     float disease;
     float mask;
     float immunity;

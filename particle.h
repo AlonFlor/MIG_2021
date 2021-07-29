@@ -29,6 +29,7 @@ public:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     void toggleDisplayMode();
 
+    int getID();
     float getX();
     float getY();
     float getR() const;
@@ -36,6 +37,7 @@ public:
     int getGroup();
     float getDisease();
     struct status getStatus();
+    QColor getDiseaseColor();
 
     void setX(float);
     void setY(float);
@@ -68,7 +70,6 @@ private:
     int display_mode;
     float scale;
     bool hovered;
-    bool selected;
     QGraphicsTextItem *text;
     QString statusDisplayString;
 };

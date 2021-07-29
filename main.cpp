@@ -11,16 +11,16 @@ int main(int argc, char *argv[]){
     w.show();
 
     w.setCrowdCount(num_people);
-    w.setScale(10);
-    w.setStepSize(10);
+    w.setScale(11);
+    w.setStepSize(15);
     //create output directory
     std::string outputDir = ".\\output";
     CreateDirectoryA(outputDir.c_str(),NULL);
     MIGBasicSim sim;
     //one person is infected, people[42].disease = 1.0;
-    sim.setInfection(42,1.0);
-    int num_steps = ceil(total_time / dt);
-    int test_steps = 1;
+    //sim.setInfection(42,1.0);
+    //int num_steps = ceil(total_time / dt);
+    //int test_steps = 1;
     w.setSimulation(&sim);
 
 //    //main loop

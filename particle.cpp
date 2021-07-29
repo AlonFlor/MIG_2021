@@ -8,7 +8,6 @@ Particle::Particle(float x,float y,float radius){
     this->radius=radius;
     display_mode=0;
     hovered=false;
-    selected=false;
     setFlag(ItemIsSelectable,true);
     setAcceptHoverEvents(true);
     //TODO: display info with hover event
@@ -33,18 +32,17 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setBrush(b);
 
     //std::cout<<"Particle::paint x="<<x<<", y="<<y<<std::endl;
-    if(isSelected()){
-        painter->setBrush(QColor(0,255,0));
-    }else if(hovered||selected){
+    if(hovered){
         painter->setBrush(QColor(255,220,140));
     }else if(display_mode==0){
         if(s.group==0){
-            painter->setBrush(QColor(255,0,0));
+            painter->setBrush(QColor(255,120,120));
         }else if(s.group==1){
-            painter->setBrush(QColor(0,0,255));
+            painter->setBrush(QColor(120,120,255));
         }
     }else if(display_mode==1){
-        painter->setBrush(QColor(255*(1-s.disease),255*(1-s.disease),255*(1-s.disease)));
+        //painter->setBrush(QColor(255*(1-s.disease),255*(1-s.disease),255*(1-s.disease)));
+        painter->setBrush(getDiseaseColor());
     }
     painter->drawEllipse(QRect(0,0,r*2,r*2));
 }
@@ -56,6 +54,10 @@ void Particle::toggleDisplayMode(){
 }
 
 //getters
+int Particle::getID(){
+    return id;
+}
+
 float Particle::getX(){
     return s.x*scale;
 }
@@ -83,6 +85,15 @@ float Particle::getDisease(){
 
 struct status Particle::getStatus(){
     return s;
+}
+
+QColor Particle::getDiseaseColor(){
+    float d=s.disease;
+    float red=255*d;
+    float green=255*(1-d);
+    float blue=0;
+    QColor c(red,green,blue);
+    return c;
 }
 
 //setters
@@ -173,7 +184,6 @@ void Particle::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 void Particle::mousePressEvent(QGraphicsSceneMouseEvent *event){
     Q_UNUSED(event);
     std::cout<<"Particle::press ["<<getX()<<","<<getY()<<"]"<<std::endl;
-    selected=true;
     update();
 }
 

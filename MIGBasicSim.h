@@ -33,9 +33,10 @@ public:
     ~MIGBasicSim();
     void readDescriptionTxt();
     void initializeCrowd();
+    void reset();
     void initializeCrowdNoMask();
     void update();
-    void updateOnePerson(Person*);
+    //void updateOnePerson(Person*);
     //Person initialize(float initial_X[], float initial_V[], float desired_displacement[], int group_ID);
     float** interaction_force_and_disease_spread(Person p1, Person p2);
     float** net_interaction_force_and_disease_spread(int p1_index, Person people[]);

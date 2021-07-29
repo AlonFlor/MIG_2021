@@ -3,17 +3,19 @@
 View::View(QGraphicsScene *scene,QWidget *parent): graphicsScene(scene)
 {
     Q_UNUSED(parent);
+    graphicsScene=scene;
     setScene(scene);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     crowd = new Crowd();
-    float scale=8.1;
+    float scale=8.5;
     scene->setSceneRect(QRect(-50*scale,-40*scale,100*scale,80*scale));
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
-    //Top left info display
-    QString string="Particle Info\n";
-    text=scene->addText(string);
-    text->setPos(-400,-320);
+
+    //Info Display at Top of GUI
+    text=addText("Particle Info\n",-400,-300,16);
+    addText("(Hover to view)\n",-400,-320,10);
+    addText("S - Step Forward    D - Switch Display Mode    R - Reset\n",-200,-340,12);
 }
 
 View::~View()
@@ -71,7 +73,7 @@ void View::toggleDisplayMode(){
 }
 
 void View::togglePause(){
-    pause=-pause;
+    pause=!pause;
 }
 
 void View::incrementStep(){
@@ -102,6 +104,8 @@ void View::display(){
 }
 
 void View::restart(){
+    simulation->reset();
+    display();
     setStepCount(0);
 }
 
@@ -145,10 +149,16 @@ void View::setScale(float s){
 }
 
 void View::mousePressEvent(QMouseEvent *event){
-    if(!itemAt(event->pos())){
+    Particle* selected=(Particle*)itemAt(event->pos());
+    if(!selected){
         qDebug("Nothing");
     }else{
+        int index=selected->getID();
+        float disease=1;
+        simulation->setInfection(index,disease);
         qDebug("Item Selected");
+        struct status s=simulation->getStatus(index);
+        crowd->setParticleStatus(index,s);
     }
     QGraphicsView::mousePressEvent(event);
 }
@@ -166,4 +176,15 @@ void View::printItems(){
     for(i=item_list.begin();i!=item_list.end();++i){
         std::cout<<(*i)->pos().x()<<" "<<(*i)->pos().y()<<std::endl;
     }
+}
+
+QGraphicsTextItem* View::addText(QString content,float x,float y,int size){
+    QGraphicsTextItem* text=graphicsScene->addText(content);
+    text->setPos(x,y);
+    if(size>0){
+        QFont font=text->font();
+        font.setPointSize(size);
+        text->setFont(font);
+    }
+    return text;
 }

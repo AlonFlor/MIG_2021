@@ -80,6 +80,15 @@ void MIGBasicSim::initializeCrowd(){
     }
 }
 
+void MIGBasicSim::reset(){
+    time_till_now=0;
+    Person* p;
+    for(int i=0;i<int(people.size());++i){
+        p=people[i];
+        p->reset();
+    }
+}
+
 void MIGBasicSim::initializeCrowdNoMask(){
     row_in_group=5;
     column_in_group=num_people/(num_groups*row_in_group);
@@ -172,12 +181,12 @@ void MIGBasicSim::update(){
     }
 }
 
-void MIGBasicSim::updateOnePerson(Person* one){
-    std::vector<float> desired_velocity = one->getDesiredVelocity();
-    std::vector<float> desired_velocity_force = Person::diff(one->V,desired_velocity);
-    std::vector<std::vector<float>> force_disease = net_interaction_force_and_disease_spread(one);
-    one->update(dt,force_disease,relaxation_time);
-}
+//void MIGBasicSim::updateOnePerson(Person* one){
+//    std::vector<float> desired_velocity = one->getDesiredVelocity();
+//    std::vector<float> desired_velocity_force = Person::diff(one->V,desired_velocity);
+//    std::vector<std::vector<float>> force_disease = net_interaction_force_and_disease_spread(one);
+//    one->update(dt,force_disease,relaxation_time);
+//}
 
 void MIGBasicSim::outputCSV(int i){
     //zero padding
