@@ -58,12 +58,6 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
 private:
-//    float x=0;
-//    float y=0;
-//    int group=0;
-//    float disease=0;
-//    QList<float*> history;
-//    std::vector<float> direction={0,0};
     int id;
     float radius;
     struct status s;

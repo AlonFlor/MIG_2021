@@ -12,19 +12,6 @@
 #include <random>
 #include <Windows.h>
 #include "Person.h"
-//#include "view.h"
-
-//float interaction_strength = 5.0;
-//float interaction_range = 1.0;
-//float relaxation_time = 1.0;
-//float desired_speed = 1.0;
-
-//float interaction_radius = 1.5;
-//float max_interation_force = 20;
-
-const float dt = 0.001;
-const float total_time = 100;
-const int num_people = 100;
 
 class MIGBasicSim
 {

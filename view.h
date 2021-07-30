@@ -16,7 +16,6 @@ class View : public QGraphicsView
     Q_OBJECT
 
 public:
-//    View(QWidget *parent=nullptr);
     View(QGraphicsScene *scene=nullptr,QWidget *parent=nullptr);
     ~View();
 //    void wheelEvent(QWheelEvent *event);

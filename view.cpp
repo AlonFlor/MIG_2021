@@ -13,9 +13,9 @@ View::View(QGraphicsScene *scene,QWidget *parent): graphicsScene(scene)
     viewport()->setMouseTracking(true);
 
     //Info Display at Top of GUI
-    text=addText("Particle Info\n",-400,-300,16);
-    addText("(Hover to view)\n",-400,-320,10);
-    addText("S - Step Forward    D - Switch Display Mode    R - Reset\n",-200,-340,12);
+    text=addText("Particle Info\n",-400,-230,20);
+    addText("(Hover to view)\n",-400,-250,15);
+    addText("S - Step Forward    D - Switch Display Mode    R - Reset\n",-400,200,25);
 }
 
 View::~View()
@@ -85,7 +85,7 @@ void View::incrementStep(){
 }
 
 void View::bigStep(){
-    for(int i=0;i<630;++i){
+    for(int i=0;i<800;++i){
         step_count++;
         simulation->update();
     }
@@ -134,7 +134,6 @@ void View::setStepCount(int s)
 void View::setCrowdCount(int count){
     delete crowd;
     crowd = new Crowd(count);
-    //scene()->addItem(crowd);
     addParticles();
     crowd->setTextPointer(text);
 }
@@ -144,7 +143,6 @@ void View::setStepSize(int s){
 }
 
 void View::setScale(float s){
-    //scene()->setSceneRect(QRect(-50*s,-40*s,100*s,80*s));
     crowd->setScale(s);
 }
 

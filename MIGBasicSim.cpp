@@ -181,13 +181,6 @@ void MIGBasicSim::update(){
     }
 }
 
-//void MIGBasicSim::updateOnePerson(Person* one){
-//    std::vector<float> desired_velocity = one->getDesiredVelocity();
-//    std::vector<float> desired_velocity_force = Person::diff(one->V,desired_velocity);
-//    std::vector<std::vector<float>> force_disease = net_interaction_force_and_disease_spread(one);
-//    one->update(dt,force_disease,relaxation_time);
-//}
-
 void MIGBasicSim::outputCSV(int i){
     //zero padding
     std::stringstream ss;
